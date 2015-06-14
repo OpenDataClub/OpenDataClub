@@ -19,7 +19,9 @@ libraryDependencies ++= Seq(
   "org.webjars" %% "webjars-play" % "2.4.0-1",
   "org.webjars" % "bootstrap" % "3.3.4",
   "org.webjars" % "angular-ui-bootstrap" % "0.13.0",
-  "org.webjars" % "angularjs" % "1.4.0"
+  "org.webjars" % "angularjs" % "1.4.0",
+  "org.webjars" % "d3js" % "3.5.5-1",
+  "org.webjars" % "nvd3-community" % "1.7.0"
 )
 
 libraryDependencies += evolutions

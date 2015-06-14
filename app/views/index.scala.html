@@ -2,11 +2,29 @@
 <html ng-app>
 <head>
 <link rel='stylesheet' href='@routes.WebJarAssets.at(WebJarAssets.locate("css/bootstrap.min.css"))'>
+
 <script src='@routes.WebJarAssets.at(WebJarAssets.locate("angular.js"))'></script>
+
+<script src='@routes.WebJarAssets.at(WebJarAssets.locate("d3.min.js"))'></script>
+<link rel='stylesheet' href='@routes.WebJarAssets.at(WebJarAssets.locate("nv.d3.css"))'>
+<script src='@routes.WebJarAssets.at(WebJarAssets.locate("nv.d3.min.js"))'></script>
+<style>
+
+#chart svg {
+  height: 400px;
+}
+
+</style>
 </head>
 <body>
 	<h1>Open Data Club</h1>
+	
+	<!-- TODO: remove, just checking nvd3 is working -->
+	<div id="chart"><svg></svg></div>
+	<script src='@routes.Assets.at("javascript/sample_chart.js")'></script>
+	
 	<!-- TODO: remove, just checking AngularJS is working -->
 	<div>{{'Last update time' + ':'}} @meta.lastDataUpdate</div>
+	
 </body>
 </html>
