@@ -1,5 +1,12 @@
 @(meta: com.opendataclub.models.MetaOpenDataClub)
-
-<h1>Open Data Club</h1>
-
-Last update time: @meta.lastDataUpdate
+<html ng-app>
+<head>
+<link rel='stylesheet' href='@routes.WebJarAssets.at(WebJarAssets.locate("css/bootstrap.min.css"))'>
+<script src='@routes.WebJarAssets.at(WebJarAssets.locate("angular.js"))'></script>
+</head>
+<body>
+	<h1>Open Data Club</h1>
+	<!-- TODO: remove, just checking AngularJS is working -->
+	<div>{{'Last update time' + ':'}} @meta.lastDataUpdate</div>
+</body>
+</html>

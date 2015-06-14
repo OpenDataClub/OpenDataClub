@@ -1,1 +1,3 @@
-GET /				com.opendataclub.controllers.HomeController.index
+GET     /webjars/*file                    controllers.WebJarAssets.at(file)
+
+GET     /                                 com.opendataclub.controllers.HomeController.index

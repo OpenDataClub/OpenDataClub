@@ -15,7 +15,11 @@ libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick" % "3.0.0" withSources(),
   "joda-time" % "joda-time" % "2.7" withSources(),
   "org.joda" % "joda-convert" % "1.7" withSources(),
-  "com.github.tototoshi" %% "slick-joda-mapper" % "2.0.0" withSources()
+  "com.github.tototoshi" %% "slick-joda-mapper" % "2.0.0" withSources(),
+  "org.webjars" %% "webjars-play" % "2.4.0-1",
+  "org.webjars" % "bootstrap" % "3.3.4",
+  "org.webjars" % "angular-ui-bootstrap" % "0.13.0",
+  "org.webjars" % "angularjs" % "1.4.0"
 )
 
 libraryDependencies += evolutions
