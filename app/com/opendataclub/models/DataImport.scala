@@ -22,7 +22,7 @@ case class DataImport(externalDataId: Long, createdAt: DateTime, content: JsValu
 class DataImports(tag: Tag) extends Table[DataImport](tag, "data_imports") {
   val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
   
-  def externalDataId = column[Long]("external_data_id")
+  def externalDataId = column[Long]("external_data_source_id")
   def externalData = foreignKey("data_imports_external_data_fk", externalDataId, externalDataSources)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
   def createdAt = column[DateTime]("created_at")
   def content = column[JsValue]("content")
