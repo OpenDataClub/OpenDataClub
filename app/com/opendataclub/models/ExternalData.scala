@@ -11,6 +11,11 @@ import org.joda.time.DateTime
 import slick.lifted.Tag
 import com.opendataclub.scrapers.ine.IneEpaScraper
 import scala.concurrent.ExecutionContext.Implicits.global
+import com.opendataclub.scrapers.Scraper
+import com.opendataclub.scrapers.Scraper
+import scala.util.Failure
+import scala.util.Try
+import scala.util.Success
 
 class ExternalDataSourceRepository(dbConfig: DatabaseConfig[JdbcProfile]) {
 
@@ -19,11 +24,16 @@ class ExternalDataSourceRepository(dbConfig: DatabaseConfig[JdbcProfile]) {
 
   def extract(id: Long): Future[DataImport] = {
     val edsf = db.run(externalDataSources.filter(_.id === new ExternalDataSourceId(-1L)).take(1).result.head)
-    for {
+    val dataImportAttempt = for {
       eds <- edsf
-      di <- Future { eds.extract }
-      whatever <- db.run(slick.lifted.TableQuery[DataImports] += di)
-    } yield di
+      diAttempt <- Future { eds.extract }
+    } yield diAttempt
+    
+    dataImportAttempt.map { dataImport => dataImport match {
+      case Success(di) => db.run(slick.lifted.TableQuery[DataImports] += di); di
+      case Failure(e) => throw e
+      }
+    }
   }
 }
 
@@ -32,11 +42,14 @@ case class ExternalDataSourceId(value: Long) extends slick.lifted.MappedTo[Long]
 /**
  * @author juanignaciosl
  */
-case class ExternalDataSource(sourceId: SourceId, name: String, description: String, url: String, downloadUrl: String, createdAt: DateTime, updatedAt: DateTime, id: ExternalDataSourceId) {
+case class ExternalDataSource(sourceId: SourceId, name: String, description: String, url: String, downloadUrl: String, className: String, createdAt: DateTime, updatedAt: DateTime, id: ExternalDataSourceId) {
 
-  def extract: DataImport = {
-    // TODO: this should be a factory depending on current ExternalDataSource
-    new IneEpaScraper(this).run
+  def extract: Try[DataImport] = {
+    val scraper = Class.forName(className).newInstance()
+    scraper match {
+      case s: Scraper => s.run(this)
+      case _ => Failure(new RuntimeException(s"$className not found"))
+    }
   }
 
 }
@@ -51,9 +64,10 @@ class ExternalDataSources(tag: Tag) extends Table[ExternalDataSource](tag, "exte
   def description = column[String]("description")
   def url = column[String]("url")
   def downloadUrl = column[String]("download_url")
+  def className = column[String]("class_name")
   def createdAt = column[DateTime]("created_at")
   def updatedAt = column[DateTime]("updated_at")
   def id = column[ExternalDataSourceId]("id", O.AutoInc, O.PrimaryKey)
 
-  def * = (sourceId, name, description, url, downloadUrl, createdAt, updatedAt, id) <> (ExternalDataSource.tupled, ExternalDataSource.unapply)
+  def * = (sourceId, name, description, url, downloadUrl, className, createdAt, updatedAt, id) <> (ExternalDataSource.tupled, ExternalDataSource.unapply)
 }

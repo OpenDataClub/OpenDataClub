@@ -12,6 +12,9 @@ import com.opendataclub.models.DataImport
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json
 import play.api.libs.json.Writes
+import com.opendataclub.scrapers.Scraper
+import scala.util.Try
+import scala.util.Success
 
 /**
  * @author juanignaciosl
@@ -22,18 +25,18 @@ import play.api.libs.json.Writes
  *   -> "Ocupados por sexo y grupo de edad. Valores absolutos y porcentajes respecto del total de cada sexo" (http://www.ine.es/dynt3/inebase/es/index.htm?padre=982&capsel=985)
  *   -> Download, CSV: http://www.ine.es/jaxiT3/files/es/4076c.csv?t=4076&nocab=1
  */
-class IneEpaScraper(externalDataSource: ExternalDataSource) {
+class IneEpaScraper extends Scraper {
 
   val downloadedFilePath = "tmp/epaQuarterSexAge.csv"
 
-  def run: DataImport = {
-    downloadEpaQuarterSexAge(downloadedFilePath)
+  def run(externalDataSource: ExternalDataSource): Try[DataImport] = {
+    downloadEpaQuarterSexAge(externalDataSource.downloadUrl, downloadedFilePath)
     val intervalsAndValuesPerRange = parseEpaQuarterSexAgeFile()
-    new DataImport(externalDataSource, intervalsAndValuesPerRangeToJson(intervalsAndValuesPerRange))
+    Success(new DataImport(externalDataSource, intervalsAndValuesPerRangeToJson(intervalsAndValuesPerRange)))
   }
 
-  private def downloadEpaQuarterSexAge(downloadedFilePath: String = downloadedFilePath): Unit = {
-    fileDownloader(externalDataSource.downloadUrl, downloadedFilePath)
+  private def downloadEpaQuarterSexAge(downloadUrl: String, downloadedFilePath: String = downloadedFilePath): Unit = {
+    fileDownloader(downloadUrl, downloadedFilePath)
   }
 
   private def fileDownloader(url: String, filename: String) = {
