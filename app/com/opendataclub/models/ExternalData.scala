@@ -36,10 +36,7 @@ case class ExternalDataSource(sourceId: SourceId, name: String, description: Str
 
   def extract: DataImport = {
     // TODO: this should be a factory depending on current ExternalDataSource
-    val scraper = new IneEpaScraper(this)
-    val dataImport = scraper.run
-
-    dataImport
+    new IneEpaScraper(this).run
   }
 
 }
