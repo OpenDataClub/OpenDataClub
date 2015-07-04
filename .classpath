@@ -45,7 +45,6 @@
   <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-netty-server_2.11/jars/play-netty-server_2.11-2.4.0.jar"/>
   <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/io.netty/netty/bundles/netty-3.10.3.Final.jar"/>
   <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.netty/netty-http-pipelining/jars/netty-http-pipelining-1.1.4.jar"/>
-  <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/org.postgresql/postgresql/jars/postgresql-9.2-1004-jdbc41.jar"/>
   <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-slick_2.11/jars/play-slick_2.11-1.0.0.jar"/>
   <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.slick/slick_2.11/jars/slick_2.11-3.0.0.jar"/>
   <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/org.reactivestreams/reactive-streams/jars/reactive-streams-1.0.0.jar"/>
@@ -53,6 +52,10 @@
   <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-jdbc-api_2.11/jars/play-jdbc-api_2.11-2.4.0.jar"/>
   <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-slick-evolutions_2.11/jars/play-slick-evolutions_2.11-1.0.0.jar"/>
   <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-jdbc-evolutions_2.11/jars/play-jdbc-evolutions_2.11-2.4.0.jar"/>
+  <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.github.tminglei/slick-pg_2.11/jars/slick-pg_2.11-0.9.0.jar"/>
+  <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.github.tminglei/slick-pg_core_2.11/jars/slick-pg_core_2.11-0.9.0.jar"/>
+  <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/org.postgresql/postgresql/jars/postgresql-9.4-1201-jdbc41.jar"/>
+  <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.github.nscala-time/nscala-time_2.11/jars/nscala-time_2.11-2.0.0.jar"/>
   <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.github.tototoshi/slick-joda-mapper_2.11/jars/slick-joda-mapper_2.11-2.0.0.jar"/>
   <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/org.webjars/webjars-play_2.11/jars/webjars-play_2.11-2.4.0-1.jar"/>
   <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/org.webjars/requirejs/jars/requirejs-2.1.15.jar"/>
