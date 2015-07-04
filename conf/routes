@@ -2,3 +2,4 @@ GET     /assets/*file                     controllers.Assets.at(path="/public", 
 GET     /webjars/*file                    controllers.WebJarAssets.at(file)
 
 GET     /                                 com.opendataclub.controllers.HomeController.index
+GET     /epa                              com.opendataclub.controllers.EpaExampleController.index

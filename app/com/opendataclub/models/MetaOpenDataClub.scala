@@ -22,7 +22,6 @@ class MetaOpenDataClubs(tag: Tag) extends Table[MetaOpenDataClub](tag, "meta_ope
 }
 
 class MetaOpenDataClubRepository(dbConfig: DatabaseConfig[JdbcProfile]) {
-  //import dbConfig.driver.api._
   
   val db = dbConfig.db
   val metaOpenDataClubs = slick.lifted.TableQuery[MetaOpenDataClubs]

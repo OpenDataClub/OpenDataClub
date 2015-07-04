@@ -6,7 +6,7 @@
 
 * SBT: [installing sbt](http://www.scala-sbt.org/download.html).
 
-* PostgreSQL. You can find database configuration at `conf/application.conf`.
+* PostgreSQL 9.4. You can find database configuration at `conf/application.conf`.
 
 ## How to run
 
