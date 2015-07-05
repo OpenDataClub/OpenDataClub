@@ -12,9 +12,11 @@ import slick.lifted.Tag
 import play.api.libs.json.JsValue
 import com.opendataclub.postgres.MyPostgresDriver.api.playJsonTypeMapper
 
-case class DataImport(externalDataSourceId: ExternalDataSourceId, createdAt: DateTime, content: JsValue, id: Option[Long]) {
+case class DataImport(externalDataSourceId: ExternalDataSourceId, createdAt: DateTime, content: JsValue, id: Option[DataImportId]) {
   def this(externalDataSource: ExternalDataSource, content: JsValue)= this(externalDataSource.id, new DateTime, content, None)
 }
+
+case class DataImportId(value: Long) extends slick.lifted.MappedTo[Long]
 
 class DataImports(tag: Tag) extends Table[DataImport](tag, "data_imports") {
   val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
@@ -23,7 +25,7 @@ class DataImports(tag: Tag) extends Table[DataImport](tag, "data_imports") {
   def externalData = foreignKey("data_imports_external_data_fk", externalDataId, externalDataSources)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
   def createdAt = column[DateTime]("created_at")
   def content = column[JsValue]("content")
-  def id = column[Long]("id", O.AutoInc, O.PrimaryKey)
+  def id = column[DataImportId]("id", O.AutoInc, O.PrimaryKey)
   
   def * = (externalDataId, createdAt, content, id.?) <> (DataImport.tupled, DataImport.unapply)
 }
