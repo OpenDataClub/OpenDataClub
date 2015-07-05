@@ -12,7 +12,7 @@ import slick.lifted.Tag
 import play.api.libs.json.JsValue
 import com.opendataclub.postgres.MyPostgresDriver.api.playJsonTypeMapper
 
-class DataImportRepository(dbConfig: DatabaseConfig[JdbcProfile]) {
+class DataImportRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadWriteRepository[DataImport, DataImportId] {
   val db = dbConfig.db
 
   val dataImports = slick.lifted.TableQuery[DataImports]

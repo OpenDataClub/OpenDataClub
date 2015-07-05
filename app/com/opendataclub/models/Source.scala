@@ -14,14 +14,7 @@ import com.opendataclub.scrapers.ine.IneEpaScraper
 
 case class SourceId(value: Long) extends slick.lifted.MappedTo[Long]
 
-/**
- * @author juanignaciosl
- */
-case class Source(name: String, url: String, createdAt: DateTime, updatedAt: DateTime, id: Option[SourceId]) {
-  
-
-  
-}
+case class Source(name: String, url: String, createdAt: DateTime, updatedAt: DateTime, id: Option[SourceId])
 
 class Sources(tag: Tag) extends Table[Source](tag, "sources") {
   def name = column[String]("name")

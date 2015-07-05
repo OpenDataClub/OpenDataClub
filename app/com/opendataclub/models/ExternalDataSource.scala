@@ -20,9 +20,8 @@ import scala.util.Success
 class ExternalDataSourceService(repository: ExternalDataSourceRepository, dataImportRepository: DataImportRepository) {
 
   def extract(id: ExternalDataSourceId): Future[(ExternalDataSource, DataImport)] = {
-    val edsf = repository.get(id)
     val externalDataSourceAndDataImportAttempt = for {
-      eds <- edsf
+      eds <- repository.get(id)
       diAttempt <- Future { eds.extract }
     } yield (eds, diAttempt)
 
@@ -36,7 +35,7 @@ class ExternalDataSourceService(repository: ExternalDataSourceRepository, dataIm
   }
 }
 
-class ExternalDataSourceRepository(dbConfig: DatabaseConfig[JdbcProfile]) {
+class ExternalDataSourceRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadRepository[ExternalDataSource, ExternalDataSourceId] {
   val db = dbConfig.db
 
   val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
