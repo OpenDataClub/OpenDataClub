@@ -17,7 +17,13 @@ $ sbt
 [Open Data Cloud] $ run
 ```
 
-### How to run for development:
+## Samples
+
+http://localhost:9000/externaldatasource/-1
+
+## Development:
+
+Run with
 
 ```
 export SBT_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=4000,server=y,suspend=n" && activator
@@ -30,3 +36,4 @@ This way you can debug from EclipseIDE with Debug --> Remote Java Application, S
 
 [It looks like sbteclipse can't generate relative paths at .classpath](https://github.com/typesafehub/sbteclipse/issues/164), so we can't share it.
 It's removed at `.gitignore`, so you might want to run `eclipse` inside activator console in order to generate a fresh .classpath.
+

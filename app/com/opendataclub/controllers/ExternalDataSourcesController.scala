@@ -9,11 +9,11 @@ import com.opendataclub.models._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class EpaExampleController @Inject() (dbConfigProvider: DatabaseConfigProvider) extends Controller {
+class ExternalDataSourcesController @Inject() (dbConfigProvider: DatabaseConfigProvider) extends Controller {
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
-  def index = Action.async { implicit request =>
-    new ExternalDataSourceService(new ExternalDataSourceRepository(dbConfig), new DataImportRepository(dbConfig)).extract(new ExternalDataSourceId(-1))
+  def show(id: ExternalDataSourceId) = Action.async { implicit request =>
+    new ExternalDataSourceService(new ExternalDataSourceRepository(dbConfig), new DataImportRepository(dbConfig)).extract(id)
       .map(externalDataSourceAndDataImport => Ok(views.html.dataImport(externalDataSourceAndDataImport._1, Some(externalDataSourceAndDataImport._2))))
   }
 }

@@ -16,6 +16,7 @@ import com.opendataclub.scrapers.Scraper
 import scala.util.Failure
 import scala.util.Try
 import scala.util.Success
+import play.api.mvc.PathBindable
 
 class ExternalDataSourceService(repository: ExternalDataSourceRepository, dataImportRepository: DataImportRepository) {
 
@@ -29,7 +30,7 @@ class ExternalDataSourceService(repository: ExternalDataSourceRepository, dataIm
       _ match {
         case (externalDataSource: ExternalDataSource, Success(di)) =>
           dataImportRepository.put(di); (externalDataSource, di)
-        case (externalDataSource: ExternalDataSource, Failure(e))  => throw e
+        case (externalDataSource: ExternalDataSource, Failure(e)) => throw e
       }
     }
   }
@@ -46,6 +47,16 @@ class ExternalDataSourceRepository(dbConfig: DatabaseConfig[JdbcProfile]) extend
 }
 
 case class ExternalDataSourceId(value: Long) extends slick.lifted.MappedTo[Long]
+object ExternalDataSourceId {
+  implicit def pathBinder(implicit intBinder: PathBindable[Long]) = new PathBindable[ExternalDataSourceId] {
+    override def bind(key: String, value: String): Either[String, ExternalDataSourceId] = {
+      Right(new ExternalDataSourceId(value.toLong))
+    }
+    override def unbind(key: String, id: ExternalDataSourceId): String = {
+      id.value.toString
+    }
+  }
+}
 
 case class ExternalDataSource(sourceId: SourceId, name: String, description: String, url: String, downloadUrl: String, className: String, createdAt: DateTime, updatedAt: DateTime, id: ExternalDataSourceId) {
 
