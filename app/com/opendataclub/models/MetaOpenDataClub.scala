@@ -8,9 +8,6 @@ import slick.backend.DatabaseConfig
 import scala.concurrent.Future
 import slick.driver.JdbcProfile
 
-/**
- * @author juanignaciosl
- */
 case class MetaOpenDataClub(val lastDataUpdate: DateTime, createdAt: DateTime, id: Option[Long] = None)
 
 class MetaOpenDataClubs(tag: Tag) extends Table[MetaOpenDataClub](tag, "meta_open_data_club") {

@@ -47,9 +47,6 @@ class ExternalDataSourceRepository(dbConfig: DatabaseConfig[JdbcProfile]) extend
 
 case class ExternalDataSourceId(value: Long) extends slick.lifted.MappedTo[Long]
 
-/**
- * @author juanignaciosl
- */
 case class ExternalDataSource(sourceId: SourceId, name: String, description: String, url: String, downloadUrl: String, className: String, createdAt: DateTime, updatedAt: DateTime, id: ExternalDataSourceId) {
 
   def extract: Try[DataImport] = {

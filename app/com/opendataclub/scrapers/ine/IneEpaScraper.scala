@@ -17,7 +17,6 @@ import scala.util.Try
 import scala.util.Success
 
 /**
- * @author juanignaciosl
  * ine.es
  *   -> "EPA. Ocupados (miles)". "Información detallada"
  *   -> "Resultados"

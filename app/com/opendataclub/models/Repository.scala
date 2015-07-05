@@ -2,9 +2,6 @@ package com.opendataclub.models
 
 import scala.concurrent.Future
 
-/**
- * @author juanignaciosl
- */
 trait ReadRepository[E, ID] {
   
   def get(id: ID): Future[E]

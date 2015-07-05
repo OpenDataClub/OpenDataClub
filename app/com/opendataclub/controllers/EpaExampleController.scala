@@ -9,9 +9,6 @@ import com.opendataclub.models._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-/**
- * @author juanignaciosl
- */
 class EpaExampleController @Inject() (dbConfigProvider: DatabaseConfigProvider) extends Controller {
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
