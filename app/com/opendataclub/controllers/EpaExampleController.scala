@@ -16,7 +16,9 @@ class EpaExampleController @Inject() (dbConfigProvider: DatabaseConfigProvider) 
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
   def index = Action.async { implicit request =>
-    new ExternalDataSourceService(dbConfig).extract(-1)
+    val externalDataSourceRepository = new ExternalDataSourceRepository(dbConfig)
+    val dataImportRepository = new DataImportRepository(dbConfig)
+    new ExternalDataSourceService(externalDataSourceRepository, dataImportRepository).extract(new ExternalDataSourceId(-1))
       .map(externalDataSourceAndDataImport => Ok(views.html.dataImport(externalDataSourceAndDataImport._1, Some(externalDataSourceAndDataImport._2))))
   }
 }

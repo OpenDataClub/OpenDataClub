@@ -12,6 +12,20 @@ import slick.lifted.Tag
 import play.api.libs.json.JsValue
 import com.opendataclub.postgres.MyPostgresDriver.api.playJsonTypeMapper
 
+class DataImportRepository(dbConfig: DatabaseConfig[JdbcProfile]) {
+  val db = dbConfig.db
+
+  val dataImports = slick.lifted.TableQuery[DataImports]
+
+  def get(id: DataImportId): Future[DataImport] = {
+    db.run(dataImports.filter(_.id === id).take(1).result.head)
+  }
+  
+  def put(dataImport: DataImport): Future[Int] = {
+    db.run(slick.lifted.TableQuery[DataImports] += dataImport)
+  }
+}
+
 case class DataImport(externalDataSourceId: ExternalDataSourceId, createdAt: DateTime, content: JsValue, id: Option[DataImportId]) {
   def this(externalDataSource: ExternalDataSource, content: JsValue)= this(externalDataSource.id, new DateTime, content, None)
 }

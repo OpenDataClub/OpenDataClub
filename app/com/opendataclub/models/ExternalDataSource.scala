@@ -17,23 +17,32 @@ import scala.util.Failure
 import scala.util.Try
 import scala.util.Success
 
-class ExternalDataSourceService(dbConfig: DatabaseConfig[JdbcProfile]) {
+class ExternalDataSourceService(repository: ExternalDataSourceRepository, dataImportRepository: DataImportRepository) {
 
-  val db = dbConfig.db
-  val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
-
-  def extract(id: Long): Future[(ExternalDataSource, DataImport)] = {
-    val edsf = db.run(externalDataSources.filter(_.id === new ExternalDataSourceId(-1L)).take(1).result.head)
+  def extract(id: ExternalDataSourceId): Future[(ExternalDataSource, DataImport)] = {
+    val edsf = repository.get(id)
     val externalDataSourceAndDataImportAttempt = for {
       eds <- edsf
       diAttempt <- Future { eds.extract }
     } yield (eds, diAttempt)
 
-    externalDataSourceAndDataImportAttempt.map { _ match {
-      case (externalDataSource: ExternalDataSource, Success(di)) => db.run(slick.lifted.TableQuery[DataImports] += di); (externalDataSource, di)
-      case (externalDataSource: ExternalDataSource, Failure(e)) => throw e
+    externalDataSourceAndDataImportAttempt.map {
+      _ match {
+        case (externalDataSource: ExternalDataSource, Success(di)) =>
+          dataImportRepository.put(di); (externalDataSource, di)
+        case (externalDataSource: ExternalDataSource, Failure(e))  => throw e
       }
     }
+  }
+}
+
+class ExternalDataSourceRepository(dbConfig: DatabaseConfig[JdbcProfile]) {
+  val db = dbConfig.db
+
+  val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
+
+  def get(id: ExternalDataSourceId): Future[ExternalDataSource] = {
+    db.run(externalDataSources.filter(_.id === new ExternalDataSourceId(-1L)).take(1).result.head)
   }
 }
 
@@ -48,7 +57,7 @@ case class ExternalDataSource(sourceId: SourceId, name: String, description: Str
     val scraper = Class.forName(className).newInstance()
     scraper match {
       case s: Scraper => s.run(this)
-      case _ => Failure(new RuntimeException(s"$className not found"))
+      case _          => Failure(new RuntimeException(s"$className not found"))
     }
   }
 
