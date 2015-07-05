@@ -6,3 +6,5 @@ GET   /externaldatasource/:id                                       controllers.
 
 POST  /externaldatasource/:id/dataimports                           controllers.DataImportsController.create(id: com.opendataclub.models.ExternalDataSourceId)
 GET  /externaldatasource/:id/dataimports/:dataImportId              controllers.DataImportsController.show(id: com.opendataclub.models.ExternalDataSourceId, dataImportId: com.opendataclub.models.DataImportId)
+
+GET  /externaldatasource/:id/dataimports/:dataImportId/table        controllers.TablesController.show(id: com.opendataclub.models.ExternalDataSourceId, dataImportId: com.opendataclub.models.DataImportId)
