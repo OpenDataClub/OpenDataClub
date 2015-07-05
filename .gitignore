@@ -8,3 +8,4 @@ dist
 .cache-main
 bin
 .classpath
+.tmpBin
