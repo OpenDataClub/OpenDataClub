@@ -1,5 +1,6 @@
-GET   /assets/*file             controllers.Assets.at(path="/public", file)
-GET   /webjars/*file            controllers.WebJarAssets.at(file)
+GET   /assets/*file                         controllers.Assets.at(path="/public", file)
+GET   /webjars/*file                        controllers.WebJarAssets.at(file)
 
-GET   /                         com.opendataclub.controllers.HomeController.index
-GET   /externaldatasource/:id   com.opendataclub.controllers.ExternalDataSourcesController.show(id: com.opendataclub.models.ExternalDataSourceId)
+GET   /                                     com.opendataclub.controllers.HomeController.index
+GET   /externaldatasource/:id               com.opendataclub.controllers.ExternalDataSourcesController.show(id: com.opendataclub.models.ExternalDataSourceId)
+POST  /externaldatasource/:id/dataimports   controllers.DataImportsController.create(id: com.opendataclub.models.ExternalDataSourceId)

@@ -13,7 +13,7 @@ class ExternalDataSourcesController @Inject() (dbConfigProvider: DatabaseConfigP
   val dbConfig = dbConfigProvider.get[JdbcProfile]
 
   def show(id: ExternalDataSourceId) = Action.async { implicit request =>
-    new ExternalDataSourceService(new ExternalDataSourceRepository(dbConfig), new DataImportRepository(dbConfig)).extract(id)
-      .map(externalDataSourceAndDataImport => Ok(views.html.dataImport(externalDataSourceAndDataImport._1, Some(externalDataSourceAndDataImport._2))))
+    new ExternalDataSourceRepository(dbConfig).get(id)
+      .map(externalDataSource => Ok(views.html.externalDataSource(externalDataSource)))
   }
 }

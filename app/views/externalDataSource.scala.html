@@ -1,0 +1,15 @@
+@(externalDataSource: com.opendataclub.models.ExternalDataSource)
+<html ng-app>
+<head>
+</style>
+</head>
+<body>
+	<h1>External data source</h1>
+	@externalDataSource
+
+	<form method="post"
+		action="@routes.DataImportsController.create(externalDataSource.id)">
+		<input type="submit" value="Extract">
+	</form>
+</body>
+</html>
