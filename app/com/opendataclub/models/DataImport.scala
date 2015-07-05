@@ -16,7 +16,7 @@ import play.api.mvc.PathBindable
 class DataImportRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadWriteRepository[DataImport, DataImportId] {
   val db = dbConfig.db
 
-  val dataImports = slick.lifted.TableQuery[DataImports]
+  lazy val dataImports = slick.lifted.TableQuery[DataImports]
 
   def get(id: DataImportId): Future[DataImport] = {
     db.run(dataImports.filter(_.id === id).take(1).result.head)
@@ -44,7 +44,7 @@ object DataImportId {
 }
 
 class DataImports(tag: Tag) extends Table[DataImport](tag, "data_imports") {
-  val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
+  lazy val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
   
   def externalDataId = column[ExternalDataSourceId]("external_data_source_id")
   def externalData = foreignKey("data_imports_external_data_fk", externalDataId, externalDataSources)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)

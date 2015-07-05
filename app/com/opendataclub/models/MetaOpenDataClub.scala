@@ -21,7 +21,7 @@ class MetaOpenDataClubs(tag: Tag) extends Table[MetaOpenDataClub](tag, "meta_ope
 class MetaOpenDataClubRepository(dbConfig: DatabaseConfig[JdbcProfile]) {
   
   val db = dbConfig.db
-  val metaOpenDataClubs = slick.lifted.TableQuery[MetaOpenDataClubs]
+  lazy val metaOpenDataClubs = slick.lifted.TableQuery[MetaOpenDataClubs]
   
   def lastMeta: Future[MetaOpenDataClub] = {
     db.run(metaOpenDataClubs.sortBy(m => m.createdAt.desc).take(1).result.head)

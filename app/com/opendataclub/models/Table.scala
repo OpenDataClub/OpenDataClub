@@ -31,7 +31,7 @@ object DataTableId {
 }
 
 class DataTables(tag: Tag) extends Table[DataTable](tag, "data_tables") {
-  val dataImports = slick.lifted.TableQuery[DataImports]
+  lazy val dataImports = slick.lifted.TableQuery[DataImports]
 
   def dataImportId = column[DataImportId]("data_import_id")
   def dataImport = foreignKey("data_tables_data_imports_fk", dataImportId, dataImports)(_.id, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)

@@ -39,7 +39,7 @@ class ExternalDataSourceService(repository: ExternalDataSourceRepository, dataIm
 class ExternalDataSourceRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadRepository[ExternalDataSource, ExternalDataSourceId] {
   val db = dbConfig.db
 
-  val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
+  lazy val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
 
   def get(id: ExternalDataSourceId): Future[ExternalDataSource] = {
     db.run(externalDataSources.filter(_.id === new ExternalDataSourceId(-1L)).take(1).result.head)
@@ -71,7 +71,7 @@ case class ExternalDataSource(sourceId: SourceId, name: String, description: Str
 }
 
 class ExternalDataSources(tag: Tag) extends Table[ExternalDataSource](tag, "external_data_sources") {
-  val sources = slick.lifted.TableQuery[Sources]
+  lazy val sources = slick.lifted.TableQuery[Sources]
 
   def sourceId = column[SourceId]("source_id")
   def source = foreignKey("external_data_sources_source_fk", sourceId, sources)(_.id, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
