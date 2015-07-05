@@ -12,12 +12,14 @@ class TablesController @Inject() (dbConfigProvider: DatabaseConfigProvider) exte
   val dbConfig = dbConfigProvider.get[JdbcProfile]
   
   def show(id: com.opendataclub.models.ExternalDataSourceId, dataImportId: com.opendataclub.models.DataImportId) = Action.async { implicit request =>
-    val externalDataSourceAndDataImport = for {
+    val tableData = for {
       externalDataSource <- new ExternalDataSourceRepository(dbConfig).get(id)
       dataImport <- new DataImportRepository(dbConfig).get(dataImportId)
-    } yield(externalDataSource, dataImport)
+      dataTable <- new DataTableService(new DataTableRepository(dbConfig)).dataTable(dataImport, externalDataSource)
+      dataTableContent <- dataTable.content(dbConfig, dataImport)
+    } yield(externalDataSource, dataImport, dataTable, dataTableContent)
     
-    externalDataSourceAndDataImport.map { x => Ok(views.html.table(x._1, Some(x._2))) }
+    tableData.map { x => Ok(views.html.dataTable(x._1, x._2, Some(x._3))) }
   }
 
 }

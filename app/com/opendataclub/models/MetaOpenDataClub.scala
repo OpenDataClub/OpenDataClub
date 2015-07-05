@@ -14,16 +14,17 @@ class MetaOpenDataClubs(tag: Tag) extends Table[MetaOpenDataClub](tag, "meta_ope
   def lastDataUpdate = column[DateTime]("last_data_update")
   def createdAt = column[DateTime]("created_at")
   def id = column[Long]("id", O.AutoInc, O.PrimaryKey)
-  
+
   def * = (lastDataUpdate, createdAt, id.?) <> (MetaOpenDataClub.tupled, MetaOpenDataClub.unapply)
 }
 
 class MetaOpenDataClubRepository(dbConfig: DatabaseConfig[JdbcProfile]) {
-  
+
   val db = dbConfig.db
   lazy val metaOpenDataClubs = slick.lifted.TableQuery[MetaOpenDataClubs]
-  
+
   def lastMeta: Future[MetaOpenDataClub] = {
     db.run(metaOpenDataClubs.sortBy(m => m.createdAt.desc).take(1).result.head)
   }
+
 }

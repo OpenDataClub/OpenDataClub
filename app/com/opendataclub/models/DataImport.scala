@@ -23,12 +23,17 @@ class DataImportRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadWr
   }
   
   def put(dataImport: DataImport): Future[Int] = {
-    db.run(slick.lifted.TableQuery[DataImports] += dataImport)
+    db.run(dataImports += dataImport)
   }
 }
 
 case class DataImport(externalDataSourceId: ExternalDataSourceId, createdAt: DateTime, content: JsValue, id: Option[DataImportId]) {
   def this(externalDataSource: ExternalDataSource, content: JsValue)= this(externalDataSource.id, new DateTime, content, None)
+  
+  def columns = {
+    // WIP
+    List("c1 text", "c2 text")
+  }
 }
 
 case class DataImportId(value: Long) extends slick.lifted.MappedTo[Long]
