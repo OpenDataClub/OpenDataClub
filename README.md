@@ -25,3 +25,8 @@ export SBT_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_s
 ``
 
 This way you can debug from EclipseIDE with Debug --> Remote Java Application, Standard (Socket attach), port: 4000, and files will be automatically recompiled.
+
+### Troubleshooting
+
+[It looks like sbteclipse can't generate relative paths at .classpath](https://github.com/typesafehub/sbteclipse/issues/164), so we can't share it.
+It's removed at `.gitignore`, so you might want to run `eclipse` inside activator console in order to generate a fresh .classpath.

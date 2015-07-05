@@ -8,6 +8,9 @@ scalaVersion := "2.11.6"
 
 routesGenerator := InjectedRoutesGenerator
 
+EclipseKeys.relativizeLibs := true
+EclipseKeys.withSource := true
+
 libraryDependencies ++= Seq(  
   "org.postgresql" % "postgresql" % "9.4-1201-jdbc41" withSources(),
   "com.typesafe.play" %% "play-slick" % "1.0.0" withSources(),

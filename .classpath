@@ -1,8 +1,11 @@
 <classpath>
-  <classpathentry kind="src" path="app-2.11" output="target/scala-2.11/classes"/>
-  <classpathentry kind="src" path="app" output="target/scala-2.11/classes"/>
-  <classpathentry kind="src" path="test-2.11" output="target/scala-2.11/test-classes"/>
-  <classpathentry kind="src" path="test" output="target/scala-2.11/test-classes"/>
+  <classpathentry kind="src" path="app-2.11"/>
+  <classpathentry kind="src" path="app"/>
+  <classpathentry kind="src" path="conf"/>
+  <classpathentry kind="src" path="target/scala-2.11/twirl/main"/>
+  <classpathentry kind="src" path="target/scala-2.11/routes/main"/>
+  <classpathentry kind="src" path="test-2.11"/>
+  <classpathentry excluding="resources/" kind="src" path="test"/>
   <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/twirl-api_2.11/srcs/twirl-api_2.11-1.1.1-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/twirl-api_2.11/jars/twirl-api_2.11-1.1.1.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/org.apache.commons/commons-lang3/srcs/commons-lang3-3.4-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/org.apache.commons/commons-lang3/jars/commons-lang3-3.4.jar"/>
@@ -19,7 +22,7 @@
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-functional_2.11/srcs/play-functional_2.11-2.4.2-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-functional_2.11/jars/play-functional_2.11-2.4.2.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-datacommons_2.11/srcs/play-datacommons_2.11-2.4.2-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-datacommons_2.11/jars/play-datacommons_2.11-2.4.2.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/joda-time/joda-time/srcs/joda-time-2.8.1-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/joda-time/joda-time/jars/joda-time-2.8.1.jar"/>
-  <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/org.joda/joda-convert/jars/joda-convert-1.7.jar"/>
+  <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/org.joda/joda-convert/srcs/joda-convert-1.7-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/org.joda/joda-convert/jars/joda-convert-1.7.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/srcs/jackson-core-2.5.4-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/bundles/jackson-core-2.5.4.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/srcs/jackson-annotations-2.5.4-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/bundles/jackson-annotations-2.5.4.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/srcs/jackson-databind-2.5.4-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/bundles/jackson-databind-2.5.4.jar"/>
@@ -45,7 +48,7 @@
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-netty-server_2.11/srcs/play-netty-server_2.11-2.4.2-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-netty-server_2.11/jars/play-netty-server_2.11-2.4.2.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/io.netty/netty/srcs/netty-3.10.3.Final-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/io.netty/netty/bundles/netty-3.10.3.Final.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.typesafe.netty/netty-http-pipelining/srcs/netty-http-pipelining-1.1.4-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.netty/netty-http-pipelining/jars/netty-http-pipelining-1.1.4.jar"/>
-  <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/org.postgresql/postgresql/jars/postgresql-9.4-1201-jdbc41.jar"/>
+  <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/org.postgresql/postgresql/srcs/postgresql-9.4-1201-jdbc41-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/org.postgresql/postgresql/jars/postgresql-9.4-1201-jdbc41.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-slick_2.11/srcs/play-slick_2.11-1.0.0-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-slick_2.11/jars/play-slick_2.11-1.0.0.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.typesafe.slick/slick_2.11/srcs/slick_2.11-3.0.0-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.slick/slick_2.11/jars/slick_2.11-3.0.0.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/org.reactivestreams/reactive-streams/srcs/reactive-streams-1.0.0-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/org.reactivestreams/reactive-streams/jars/reactive-streams-1.0.0.jar"/>
@@ -55,7 +58,7 @@
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-jdbc-api_2.11/srcs/play-jdbc-api_2.11-2.4.2-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.typesafe.play/play-jdbc-api_2.11/jars/play-jdbc-api_2.11-2.4.2.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.github.tminglei/slick-pg_2.11/srcs/slick-pg_2.11-0.9.0-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.github.tminglei/slick-pg_2.11/jars/slick-pg_2.11-0.9.0.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.github.tminglei/slick-pg_core_2.11/srcs/slick-pg_core_2.11-0.9.0-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.github.tminglei/slick-pg_core_2.11/jars/slick-pg_core_2.11-0.9.0.jar"/>
-  <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.github.nscala-time/nscala-time_2.11/jars/nscala-time_2.11-2.0.0.jar"/>
+  <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.github.nscala-time/nscala-time_2.11/srcs/nscala-time_2.11-2.0.0-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.github.nscala-time/nscala-time_2.11/jars/nscala-time_2.11-2.0.0.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/com.github.tototoshi/slick-joda-mapper_2.11/srcs/slick-joda-mapper_2.11-2.0.0-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/com.github.tototoshi/slick-joda-mapper_2.11/jars/slick-joda-mapper_2.11-2.0.0.jar"/>
   <classpathentry sourcepath="/Users/juanignaciosl/.ivy2/cache/org.webjars/webjars-play_2.11/srcs/webjars-play_2.11-2.4.0-1-sources.jar" kind="lib" path="/Users/juanignaciosl/.ivy2/cache/org.webjars/webjars-play_2.11/jars/webjars-play_2.11-2.4.0-1.jar"/>
   <classpathentry kind="lib" path="/Users/juanignaciosl/.ivy2/cache/org.webjars/requirejs/jars/requirejs-2.1.15.jar"/>
