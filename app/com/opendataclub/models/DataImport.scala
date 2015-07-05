@@ -12,10 +12,7 @@ import slick.lifted.Tag
 import play.api.libs.json.JsValue
 import com.opendataclub.postgres.MyPostgresDriver.api.playJsonTypeMapper
 
-/**
- * @author juanignaciosl
- */
-case class DataImport(externalDataId: ExternalDataSourceId, createdAt: DateTime, content: JsValue, id: Option[Long]) {
+case class DataImport(externalDataSourceId: ExternalDataSourceId, createdAt: DateTime, content: JsValue, id: Option[Long]) {
   def this(externalDataSource: ExternalDataSource, content: JsValue)= this(externalDataSource.id, new DateTime, content, None)
 }
 

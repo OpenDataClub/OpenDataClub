@@ -17,21 +17,21 @@ import scala.util.Failure
 import scala.util.Try
 import scala.util.Success
 
-class ExternalDataSourceRepository(dbConfig: DatabaseConfig[JdbcProfile]) {
+class ExternalDataSourceService(dbConfig: DatabaseConfig[JdbcProfile]) {
 
   val db = dbConfig.db
   val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
 
-  def extract(id: Long): Future[DataImport] = {
+  def extract(id: Long): Future[(ExternalDataSource, DataImport)] = {
     val edsf = db.run(externalDataSources.filter(_.id === new ExternalDataSourceId(-1L)).take(1).result.head)
-    val dataImportAttempt = for {
+    val externalDataSourceAndDataImportAttempt = for {
       eds <- edsf
       diAttempt <- Future { eds.extract }
-    } yield diAttempt
-    
-    dataImportAttempt.map { dataImport => dataImport match {
-      case Success(di) => db.run(slick.lifted.TableQuery[DataImports] += di); di
-      case Failure(e) => throw e
+    } yield (eds, diAttempt)
+
+    externalDataSourceAndDataImportAttempt.map { _ match {
+      case (externalDataSource: ExternalDataSource, Success(di)) => db.run(slick.lifted.TableQuery[DataImports] += di); (externalDataSource, di)
+      case (externalDataSource: ExternalDataSource, Failure(e)) => throw e
       }
     }
   }

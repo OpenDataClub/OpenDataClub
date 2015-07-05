@@ -12,10 +12,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * @author juanignaciosl
  */
-class EpaExampleController @Inject()(dbConfigProvider: DatabaseConfigProvider) extends Controller {
+class EpaExampleController @Inject() (dbConfigProvider: DatabaseConfigProvider) extends Controller {
   val dbConfig = dbConfigProvider.get[JdbcProfile]
-  
-  def index  = Action.async { implicit request =>
-    new ExternalDataSourceRepository(dbConfig).extract(-1).map(di => Ok(views.html.dataImport(di)))
+
+  def index = Action.async { implicit request =>
+    new ExternalDataSourceService(dbConfig).extract(-1)
+      .map(externalDataSourceAndDataImport => Ok(views.html.dataImport(externalDataSourceAndDataImport._1, Some(externalDataSourceAndDataImport._2))))
   }
 }
