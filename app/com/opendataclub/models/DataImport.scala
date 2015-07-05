@@ -11,6 +11,7 @@ import org.joda.time.DateTime
 import slick.lifted.Tag
 import play.api.libs.json.JsValue
 import com.opendataclub.postgres.MyPostgresDriver.api.playJsonTypeMapper
+import play.api.mvc.PathBindable
 
 class DataImportRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadWriteRepository[DataImport, DataImportId] {
   val db = dbConfig.db
@@ -31,6 +32,16 @@ case class DataImport(externalDataSourceId: ExternalDataSourceId, createdAt: Dat
 }
 
 case class DataImportId(value: Long) extends slick.lifted.MappedTo[Long]
+object DataImportId {
+  implicit def pathBinder(implicit intBinder: PathBindable[Long]) = new PathBindable[DataImportId] {
+    override def bind(key: String, value: String): Either[String, DataImportId] = {
+      Right(new DataImportId(value.toLong))
+    }
+    override def unbind(key: String, id: DataImportId): String = {
+      id.value.toString
+    }
+  }
+}
 
 class DataImports(tag: Tag) extends Table[DataImport](tag, "data_imports") {
   val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
