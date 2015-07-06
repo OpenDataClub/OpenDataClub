@@ -112,12 +112,12 @@ class IneEpaScraper extends Scraper {
 
     def store(dbConfig: DatabaseConfig[JdbcProfile], dataImport: DataImport, externalDataSource: ExternalDataSource): Future[Option[DataTable]] = {
       dataImport.id match {
-        case Some(id: DataImportId) => store(dbConfig, id, externalDataSource)
+        case Some(id: DataImportId) => store(dbConfig, id, dataImport, externalDataSource)
         case None                   => Future { None }
       }
     }
 
-    private def store(dbConfig: DatabaseConfig[JdbcProfile], dataImportId: DataImportId, externalDataSource: ExternalDataSource): Future[Option[DataTable]] = {
+    private def store(dbConfig: DatabaseConfig[JdbcProfile], dataImportId: DataImportId, dataImport: DataImport, externalDataSource: ExternalDataSource): Future[Option[DataTable]] = {
       val dataTable = new DataTable(dataImportId)
 
       lazy val db = dbConfig.db
@@ -138,14 +138,14 @@ class IneEpaScraper extends Scraper {
       db.run(sqlCheckTableExists).flatMap { exists =>
         // WIP
         if (!exists(0)) {
-          createDataTableContent(dbConfig, dataImportId, externalDataSource, dataTable).map { _ => Some(dataTable) }
+          createDataTableContent(dbConfig, dataImport.content, dataTable).map { _ => Some(dataTable) }
         } else {
           Future { Some(dataTable) }
         }
       }
     }
 
-    private def createDataTableContent(dbConfig: DatabaseConfig[JdbcProfile], dataImportId: DataImportId, externalDataSource: ExternalDataSource, dataTable: DataTable): Future[Boolean] = {
+    private def createDataTableContent(dbConfig: DatabaseConfig[JdbcProfile], content: JsValue, dataTable: DataTable): Future[Boolean] = {
       val name = dataTable.name
       // WIP
       lazy val db = dbConfig.db
