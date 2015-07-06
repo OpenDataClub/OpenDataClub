@@ -10,7 +10,7 @@ trait ReadRepository[E, ID] {
 
 trait WriteRepository[E] {
   
-  def put(e: E): Future[Int]
+  def put(e: E): Future[E]
   
 }
 

@@ -20,19 +20,11 @@ import play.api.mvc.PathBindable
 
 class ExternalDataSourceService(repository: ExternalDataSourceRepository, dataImportRepository: DataImportRepository) {
 
-  def extract(id: ExternalDataSourceId): Future[(ExternalDataSource, DataImport)] = {
-    val externalDataSourceAndDataImportAttempt = for {
+  def extract(id: ExternalDataSourceId, dbConfig: DatabaseConfig[JdbcProfile]): Future[(ExternalDataSource, DataImport, Option[DataTable])] = {
+    for {
       eds <- repository.get(id)
-      diAttempt <- Future { eds.extract }
-    } yield (eds, diAttempt)
-
-    externalDataSourceAndDataImportAttempt.map {
-      _ match {
-        case (externalDataSource: ExternalDataSource, Success(di)) =>
-          dataImportRepository.put(di); (externalDataSource, di)
-        case (externalDataSource: ExternalDataSource, Failure(e)) => throw e
-      }
-    }
+      extraction <- eds.extract(dbConfig, dataImportRepository)
+    } yield (eds, extraction._1, extraction._2)
   }
 }
 
@@ -59,15 +51,21 @@ object ExternalDataSourceId {
 }
 
 case class ExternalDataSource(sourceId: SourceId, name: String, description: String, url: String, downloadUrl: String, className: String, createdAt: DateTime, updatedAt: DateTime, id: ExternalDataSourceId) {
-
-  def extract: Try[DataImport] = {
-    val scraper = Class.forName(className).newInstance()
-    scraper match {
-      case s: Scraper => s.run(this)
-      case _          => Failure(new RuntimeException(s"$className not found"))
+  
+	def extract(dbConfig: DatabaseConfig[JdbcProfile], dataImportRepository: DataImportRepository) = {
+    scraper.flatMap(_.run(this, dbConfig, dataImportRepository))
+  }
+  
+  private def scraper: Future[Scraper] = {
+    Future {
+      lazy val scraper = Class.forName(className).newInstance()
+      scraper match {
+        case s: Scraper => s
+        case _          => throw new RuntimeException(s"$className not found")
+      }
     }
   }
-
+  
 }
 
 class ExternalDataSources(tag: Tag) extends Table[ExternalDataSource](tag, "external_data_sources") {

@@ -21,19 +21,15 @@ class DataImportRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadWr
   def get(id: DataImportId): Future[DataImport] = {
     db.run(dataImports.filter(_.id === id).take(1).result.head)
   }
-  
-  def put(dataImport: DataImport): Future[Int] = {
-    db.run(dataImports += dataImport)
+
+  def put(dataImport: DataImport): Future[DataImport] = {
+    val dataImportWithId = (dataImports returning dataImports.map(_.id) into ((dataImport, id) => dataImport.copy(id = Some(id)))) += dataImport
+    db.run(dataImportWithId.transactionally)
   }
 }
 
 case class DataImport(externalDataSourceId: ExternalDataSourceId, createdAt: DateTime, content: JsValue, id: Option[DataImportId]) {
-  def this(externalDataSource: ExternalDataSource, content: JsValue)= this(externalDataSource.id, new DateTime, content, None)
-  
-  def columns = {
-    // WIP
-    List("c1 text", "c2 text")
-  }
+  def this(externalDataSource: ExternalDataSource, content: JsValue) = this(externalDataSource.id, new DateTime, content, None)
 }
 
 case class DataImportId(value: Long) extends slick.lifted.MappedTo[Long]
@@ -50,12 +46,12 @@ object DataImportId {
 
 class DataImports(tag: Tag) extends Table[DataImport](tag, "data_imports") {
   lazy val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
-  
+
   def externalDataId = column[ExternalDataSourceId]("external_data_source_id")
-  def externalData = foreignKey("data_imports_external_data_fk", externalDataId, externalDataSources)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
+  def externalData = foreignKey("data_imports_external_data_fk", externalDataId, externalDataSources)(_.id, onUpdate = ForeignKeyAction.Restrict, onDelete = ForeignKeyAction.Cascade)
   def createdAt = column[DateTime]("created_at")
   def content = column[JsValue]("content")
   def id = column[DataImportId]("id", O.AutoInc, O.PrimaryKey)
-  
+
   def * = (externalDataId, createdAt, content, id.?) <> (DataImport.tupled, DataImport.unapply)
 }

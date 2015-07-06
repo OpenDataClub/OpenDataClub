@@ -14,21 +14,6 @@ import play.api.libs.json.JsValue
 import com.opendataclub.postgres.MyPostgresDriver.api.playJsonTypeMapper
 import play.api.mvc.PathBindable
 
-class DataTableService(dataTableRepository: DataTableRepository) {
-  def dataTable(dataImport: DataImport, externalDataSource: ExternalDataSource): Future[DataTable] = {
-    val dataTableFuture = dataTableRepository.get(dataImport.id.get)
-    dataTableFuture.flatMap {
-      _ match {
-        case Some(dt: DataTable) => Future { dt }
-        case None => {
-          val dataTable = new DataTable(dataImport, externalDataSource)
-          dataTableRepository.put(dataTable).map { _ => dataTable }
-        }
-      }
-    }
-  }
-}
-
 class DataTableRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadWriteRepository[DataTable, DataTableId] {
   lazy val db = dbConfig.db
 
@@ -42,52 +27,29 @@ class DataTableRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadWri
     db.run(dataTables.filter(_.dataImportId === dataImportId).take(1).result.headOption)
   }
 
-  def put(dataTable: DataTable): Future[Int] = {
-    db.run(dataTables += dataTable)
+  def put(dataTable: DataTable): Future[DataTable] = {
+    val dataTableWithId = (dataTables returning dataTables.map(_.id) into ((Table, id) => dataTable.copy(id = Some(id)))) += dataTable
+    db.run(dataTableWithId.transactionally)
   }
 }
 
 case class DataTable(dataImportId: DataImportId, schema: String, name: String, createdAt: DateTime, id: Option[DataTableId]) {
-  // TODO: how can we avoid using `.get`? Search the whole proyect for some .get on Option
   // TODO: maybe we should use s"eds_${externalDataSource.id.value}" as schema, for example, instead of public
-  def this(dataImport: DataImport, externalDataSource: ExternalDataSource) = this(dataImport.id.get, "public", s"di_${dataImport.id.get.value}", new DateTime, None)
-  
-  def content(dbConfig: DatabaseConfig[JdbcProfile], dataImport: DataImport): Future[Boolean] = {
+  def this(dataImportId: DataImportId) = this(dataImportId, "public", s"di_${dataImportId.value}", new DateTime, None)
+
+  def headers(dbConfig: DatabaseConfig[JdbcProfile]): Future[List[DataTableColumn]] = {
     lazy val db = dbConfig.db
-    
-    val sqlCheckTableExists = sql"""
-      SELECT EXISTS (
-          SELECT 1 
-          FROM   pg_catalog.pg_class c
-          JOIN   pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-          WHERE  n.nspname = $schema
-          AND    c.relname = $name
-          AND    c.relkind = 'r'
-      )
-      """.as[(Boolean)]
-    
-    db.run(sqlCheckTableExists).flatMap { exists =>
-      // WIP
-      if(!exists(0)) {
-        createDataTableContent(dbConfig, dataImport)
-      } else {
-        Future { true }
-      }
-    }
+
+    val columnsSql = sql"""
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_schema = $schema
+      AND table_name   = $name
+      """.as[(String)]
+
+    db.run(columnsSql).map(_.toList.map(new DataTableColumn(_)))
   }
-  
-  private def createDataTableContent(dbConfig: DatabaseConfig[JdbcProfile], dataImport: DataImport): Future[Boolean] = {
-    // WIP
-    lazy val db = dbConfig.db
-    val sqlCreateTable = sqlu"""
-      create table #$name (
-        "id" SERIAL NOT NULL PRIMARY KEY,
-        #${dataImport.columns.mkString(",")}
-      )
-      """
-    val result = db.run(sqlCreateTable)
-    result.map { _ => true }
-  }
+
 }
 
 case class DataTableId(value: Long) extends slick.lifted.MappedTo[Long]
@@ -114,3 +76,5 @@ class DataTables(tag: Tag) extends Table[DataTable](tag, "data_tables") {
 
   def * = (dataImportId, schema, name, createdAt, id.?) <> (DataTable.tupled, DataTable.unapply)
 }
+
+case class DataTableColumn(name: String)

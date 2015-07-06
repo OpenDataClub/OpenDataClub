@@ -1,4 +1,4 @@
-@(externalDataSource: com.opendataclub.models.ExternalDataSource, dataImport: Option[com.opendataclub.models.DataImport])
+@(externalDataSource: com.opendataclub.models.ExternalDataSource, dataImport: Option[com.opendataclub.models.DataImport], dataTable: Option[com.opendataclub.models.DataTable])
 <html ng-app>
 <head>
 </style>
@@ -8,5 +8,7 @@
 @externalDataSource
 <h2>Data Import</h2>
 @dataImport.map(_.content)
+<h2>Table</h2>
+@dataTable.map(_.name)
 </body>
 </html>
