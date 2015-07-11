@@ -112,7 +112,7 @@ class IneEpaScraper extends Scraper {
     def store(dbConfig: DatabaseConfig[JdbcProfile], dataImportId: DataImportId, intervalsAndValuesPerRange: (List[Interval], List[(Range, List[String])]), externalDataSource: ExternalDataSource): Future[(String, String)] = {
 
       lazy val db = dbConfig.db
-      
+
       // TODO: maybe we should use s"eds_${externalDataSource.id.value}" as schema, for example, instead of public
       val schema = "public"
       val name = s"di_${dataImportId.value}"
@@ -140,18 +140,37 @@ class IneEpaScraper extends Scraper {
 
     private def createDataTableContent(dbConfig: DatabaseConfig[JdbcProfile], intervalsAndValuesPerRange: (List[Interval], List[(Range, List[String])]), name: String): Future[Boolean] = {
       lazy val db = dbConfig.db
+      
+      val valuesPerRange = intervalsAndValuesPerRange._2
+      
+      val columns = columnsFromRanges(valuesPerRange.map(_._1))
+
       val sqlCreateTable = sqlu"""
       create table #$name (
         "id" SERIAL NOT NULL PRIMARY KEY,
-        #${columnDefinitions(intervalsAndValuesPerRange).mkString(",")}
+        "interval" interval not null,
+        #${columns.map{ column => s"$column text" }.mkString(", ")}
       )
       """
       val result = db.run(sqlCreateTable)
+
+//      val inserts = valuesPerRange.map(
+//        rangeAndValues =>
+//          rangeAndValues._2.map {
+//            sqlu"""
+//              insert into $name (interval)
+//              values (${rangeAndValues._1})
+//              """
+//            values => values
+//          })
+
+          //, ${columns.mkString(", ")
+          
       result.map { _ => true }
     }
 
-    def columnDefinitions(intervalsAndValuesPerRanges: (List[Interval], List[(Range, List[String])])): List[String] = {
-      intervalsAndValuesPerRanges._2.map(_._1).map { range => s"from_${range.min}_to_from_${range.max} text" }
+    def columnsFromRanges(ranges: List[Range]): List[String] = {
+      ranges.map { range => s"from_${range.min}_to_from_${range.max}" }
     }
 
   }
