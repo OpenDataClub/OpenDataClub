@@ -151,7 +151,7 @@ class IneEpaScraper extends Scraper {
     }
 
     def columnDefinitions(intervalsAndValuesPerRanges: (List[Interval], List[(Range, List[String])])): List[String] = {
-      intervalsAndValuesPerRanges._2.map(_._2).map { range => s"from_${range.min}_to_from_${range.max} text" }
+      intervalsAndValuesPerRanges._2.map(_._1).map { range => s"from_${range.min}_to_from_${range.max} text" }
     }
 
   }
