@@ -18,13 +18,17 @@ import scala.util.Try
 import scala.util.Success
 import play.api.mvc.PathBindable
 
-class ExternalDataSourceService(repository: ExternalDataSourceRepository, dataImportRepository: DataImportRepository) {
+class ExternalDataSourceService(repository: ExternalDataSourceRepository, dataImportRepository: DataImportRepository, dataTableRepository: DataTableRepository) {
 
-  def extract(id: ExternalDataSourceId, dbConfig: DatabaseConfig[JdbcProfile]): Future[(ExternalDataSource, DataImport, Option[DataTable])] = {
+  // TODO: this return type is quite bizarre, improve! :_)
+  def extract(id: ExternalDataSourceId, dbConfig: DatabaseConfig[JdbcProfile]): Future[(Option[ExternalDataSource], Option[Future[(DataImport, DataTable)]])] = {
     for {
       eds <- repository.get(id)
-      extraction <- eds.extract(dbConfig, dataImportRepository)
-    } yield (eds, extraction._1, extraction._2)
+      extraction <- eds match {
+        case Some(eds: ExternalDataSource) => Future { Some(eds.extract(dbConfig, dataImportRepository, dataTableRepository)) }
+        case None => Future { None }
+      }
+    } yield (eds, extraction)
   }
 }
 
@@ -33,8 +37,8 @@ class ExternalDataSourceRepository(dbConfig: DatabaseConfig[JdbcProfile]) extend
 
   lazy val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
 
-  def get(id: ExternalDataSourceId): Future[ExternalDataSource] = {
-    db.run(externalDataSources.filter(_.id === new ExternalDataSourceId(-1L)).take(1).result.head)
+  def get(id: ExternalDataSourceId): Future[Option[ExternalDataSource]] = {
+    db.run(externalDataSources.filter(_.id === id).take(1).result.headOption)
   }
 }
 
@@ -52,8 +56,8 @@ object ExternalDataSourceId {
 
 case class ExternalDataSource(sourceId: SourceId, name: String, description: String, url: String, downloadUrl: String, className: String, createdAt: DateTime, updatedAt: DateTime, id: ExternalDataSourceId) {
   
-	def extract(dbConfig: DatabaseConfig[JdbcProfile], dataImportRepository: DataImportRepository) = {
-    scraper.flatMap(_.run(this, dbConfig, dataImportRepository))
+	def extract(dbConfig: DatabaseConfig[JdbcProfile], dataImportRepository: DataImportRepository, dataTableRepository: DataTableRepository) = {
+    scraper.flatMap(_.run(this, dbConfig, dataImportRepository, dataTableRepository))
   }
   
   private def scraper: Future[Scraper] = {

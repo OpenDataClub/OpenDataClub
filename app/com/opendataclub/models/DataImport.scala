@@ -12,24 +12,38 @@ import slick.lifted.Tag
 import play.api.libs.json.JsValue
 import com.opendataclub.postgres.MyPostgresDriver.api.playJsonTypeMapper
 import play.api.mvc.PathBindable
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class DataImportRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadWriteRepository[DataImport, DataImportId] {
+class DataImportRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadWriteRepository[TransientDataImport, StoredDataImport, DataImportId] {
   val db = dbConfig.db
 
   lazy val dataImports = slick.lifted.TableQuery[DataImports]
 
-  def get(id: DataImportId): Future[DataImport] = {
-    db.run(dataImports.filter(_.id === id).take(1).result.head)
+  def get(id: DataImportId): Future[Option[StoredDataImport]] = {
+    db.run(dataImports.filter(_.id === id).take(1).result.headOption.map {
+      _ match {
+        case Some(dataImport: TransientDataImport) => Some(new StoredDataImport(dataImport, dataImport.id.get))
+        case None => None
+      }
+    })
   }
 
-  def put(dataImport: DataImport): Future[DataImport] = {
-    val dataImportWithId = (dataImports returning dataImports.map(_.id) into ((dataImport, id) => dataImport.copy(id = Some(id)))) += dataImport
-    db.run(dataImportWithId.transactionally)
+  def put(dataImport: TransientDataImport): Future[StoredDataImport] = {
+    val dataImportId = (dataImports returning dataImports.map(_.id)) += dataImport
+    db.run(dataImportId.transactionally).map { id: DataImportId => new StoredDataImport(dataImport, id) }
   }
 }
 
-case class DataImport(externalDataSourceId: ExternalDataSourceId, createdAt: DateTime, content: JsValue, id: Option[DataImportId]) {
-  def this(externalDataSource: ExternalDataSource, content: JsValue) = this(externalDataSource.id, new DateTime, content, None)
+sealed trait DataImport {
+  def externalDataSourceId: ExternalDataSourceId
+  def createdAt: DateTime
+  def content: JsValue
+}
+case class TransientDataImport(val externalDataSourceId: ExternalDataSourceId, val content: JsValue, val createdAt: DateTime = new DateTime(), val id: Option[DataImportId] = None) extends DataImport {
+  def this(externalDataSource: ExternalDataSource, content: JsValue) = this(externalDataSource.id, content, new DateTime, None)
+}
+class StoredDataImport(val externalDataSourceId: ExternalDataSourceId, val content: JsValue, val createdAt: DateTime, val id: DataImportId) extends DataImport {
+  def this(transient: TransientDataImport, id: DataImportId) = this(transient.externalDataSourceId, transient.content, transient.createdAt, id)
 }
 
 case class DataImportId(value: Long) extends slick.lifted.MappedTo[Long]
@@ -44,7 +58,7 @@ object DataImportId {
   }
 }
 
-class DataImports(tag: Tag) extends Table[DataImport](tag, "data_imports") {
+class DataImports(tag: Tag) extends Table[TransientDataImport](tag, "data_imports") {
   lazy val externalDataSources = slick.lifted.TableQuery[ExternalDataSources]
 
   def externalDataId = column[ExternalDataSourceId]("external_data_source_id")
@@ -53,5 +67,5 @@ class DataImports(tag: Tag) extends Table[DataImport](tag, "data_imports") {
   def content = column[JsValue]("content")
   def id = column[DataImportId]("id", O.AutoInc, O.PrimaryKey)
 
-  def * = (externalDataId, createdAt, content, id.?) <> (DataImport.tupled, DataImport.unapply)
+  def * = (externalDataId, content, createdAt, id.?) <> (TransientDataImport.tupled, TransientDataImport.unapply)
 }

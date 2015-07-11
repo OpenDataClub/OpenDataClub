@@ -1,14 +1,14 @@
-@(externalDataSource: com.opendataclub.models.ExternalDataSource)
+@(externalDataSource: Option[com.opendataclub.models.ExternalDataSource])
 <html ng-app>
 <head>
 </style>
 </head>
 <body>
 	<h1>External data source</h1>
-	@externalDataSource
+	@{externalDataSource.map { x: com.opendataclub.models.ExternalDataSource => x }}
 
 	<form method="post"
-		action="@routes.DataImportsController.create(externalDataSource.id)">
+		action="@{externalDataSource.map { x: com.opendataclub.models.ExternalDataSource => routes.DataImportsController.create(x.id)} }">
 		<input type="submit" value="Extract">
 	</form>
 </body>

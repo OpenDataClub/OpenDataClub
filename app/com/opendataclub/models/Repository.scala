@@ -4,14 +4,15 @@ import scala.concurrent.Future
 
 trait ReadRepository[E, ID] {
   
-  def get(id: ID): Future[E]
+  // TODO: if a search by id fails, should return None or a failed future?
+  def get(id: ID): Future[Option[E]]
   
 }
 
-trait WriteRepository[E] {
+trait WriteRepository[TE, SE] {
   
-  def put(e: E): Future[E]
+  def put(e: TE): Future[SE]
   
 }
 
-trait ReadWriteRepository[E, ID] extends ReadRepository[E, ID] with WriteRepository[E]
+trait ReadWriteRepository[TE, SE, ID] extends ReadRepository[SE, ID] with WriteRepository[TE, SE]

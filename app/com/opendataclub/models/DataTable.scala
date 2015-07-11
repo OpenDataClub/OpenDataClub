@@ -14,13 +14,13 @@ import play.api.libs.json.JsValue
 import com.opendataclub.postgres.MyPostgresDriver.api.playJsonTypeMapper
 import play.api.mvc.PathBindable
 
-class DataTableRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadWriteRepository[DataTable, DataTableId] {
+class DataTableRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadWriteRepository[DataTable, DataTable, DataTableId] {
   lazy val db = dbConfig.db
 
   lazy val dataTables = slick.lifted.TableQuery[DataTables]
 
-  def get(id: DataTableId): Future[DataTable] = {
-    db.run(dataTables.filter(_.id === id).take(1).result.head)
+  def get(id: DataTableId): Future[Option[DataTable]] = {
+    db.run(dataTables.filter(_.id === id).take(1).result.headOption)
   }
 
   def get(dataImportId: DataImportId): Future[Option[DataTable]] = {
@@ -33,9 +33,7 @@ class DataTableRepository(dbConfig: DatabaseConfig[JdbcProfile]) extends ReadWri
   }
 }
 
-case class DataTable(dataImportId: DataImportId, schema: String, name: String, createdAt: DateTime, id: Option[DataTableId]) {
-  // TODO: maybe we should use s"eds_${externalDataSource.id.value}" as schema, for example, instead of public
-  def this(dataImportId: DataImportId) = this(dataImportId, "public", s"di_${dataImportId.value}", new DateTime, None)
+case class DataTable(dataImportId: DataImportId, schema: String, name: String, createdAt: DateTime = new DateTime(), id: Option[DataTableId] = None) {
 
   def headers(dbConfig: DatabaseConfig[JdbcProfile]): Future[List[DataTableColumn]] = {
     lazy val db = dbConfig.db

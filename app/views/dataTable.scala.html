@@ -1,12 +1,14 @@
-@(externalDataSource: com.opendataclub.models.ExternalDataSource, dataImport: com.opendataclub.models.DataImport, table: Option[com.opendataclub.models.DataTable])
+@(externalDataSource: Option[com.opendataclub.models.ExternalDataSource], dataImport: Option[com.opendataclub.models.DataImport], dataTable: Option[com.opendataclub.models.DataTable])
 <html ng-app>
 <head>
 </style>
 </head>
 <body>
 <h1>External data source</h1>
-@externalDataSource
+@{externalDataSource.map { x: com.opendataclub.models.ExternalDataSource => x }}
 <h2>Data Import</h2>
-@dataImport
+@{dataImport.map { x: com.opendataclub.models.DataImport => x }}
+<h2>Data Table</h2>
+@{dataTable.map { x: com.opendataclub.models.DataTable => x }}
 </body>
 </html>
