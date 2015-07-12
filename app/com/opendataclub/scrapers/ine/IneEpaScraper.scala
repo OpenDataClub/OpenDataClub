@@ -38,7 +38,7 @@ import com.opendataclub.models.DataTableRepository
 class IneEpaScraper extends Scraper {
 
   val downloadedFilePath = "tmp/epaQuarterSexAge.csv"
-  val groups = List("Ambos sexos", "Hombres", "Mujeres", "Ambos sexos (%)", "Hombres (%)", "Mujeres (%)" )
+  val groups = List("Ambos sexos", "Ambos sexos (%)", "Hombres", "Hombres (%)", "Mujeres (%)", "Mujeres")
 
   def run(externalDataSource: ExternalDataSource, dbConfig: DatabaseConfig[JdbcProfile], dataImportRepository: DataImportRepository, dataTableRepository: DataTableRepository): Future[(DataImport, DataTable)] = {
     new URL(externalDataSource.downloadUrl) #> new File(downloadedFilePath) !!
@@ -55,32 +55,46 @@ class IneEpaScraper extends Scraper {
 
     def parseEpaQuarterSexAgeFile(downloadedFilePath: String): Future[(List[Interval], List[(Range, List[Int])])] = {
       Future {
-        val epaContent = Source.fromFile(downloadedFilePath).getLines().toList.drop(3).dropRight(1)
+        val epaContent = Source.fromFile(downloadedFilePath).getLines().toList.drop(3)
 
         val quarters = extractQuartersFromHeader(epaContent.head)
-        val totals = epaContent.drop(1).map(extractTotals(_))
 
-        (quarters, totals)
+        val length = quarters.length
+
+        val ranges = epaContent.dropRight(1).map(extractRange(_))
+        val totals = epaContent.drop(1).map(extractTotals(_, length).padTo(length, 0)).toVector
+        
+        println(length)
+        totals.foreach { x => println(x.length) }
+
+        (quarters, ranges.zipWithIndex.map { case (r, i) => (r, totals(i)) })
       }
     }
 
     private def extractQuartersFromHeader(headersLine: String): List[Interval] = {
       headersLine.split(",").drop(9).dropRight(1).map { quarter =>
         val yearAndQuarter = quarter.split("T")
-        val beginning = new DateTime(yearAndQuarter(0).toInt, yearAndQuarter(1).toInt * 3, 1, 0, 0)
-        new Interval(beginning, 4.months)
+        val beginning = new DateTime(yearAndQuarter(0).toInt, ((yearAndQuarter(1).toInt - 1) * 3) + 1, 1, 0, 0)
+        new Interval(beginning, 3.months - 1.day)
       }.toList
     }
 
-    private def extractTotals(epaContentLine: String): (Range, List[Int]) = {
-      val cells = epaContentLine.split(",").zipWithIndex.filter(_._2 % 2 == 0).map(_._1).toList
+    private def extractRange(epaContentLine: String): (Range) = {
+      //val cells = epaContentLine.split(",").zipWithIndex.filter(_._2 % 2 == 0).map(_._1).toList
+      val cells = epaContentLine.split(",").toList
+      val total = """Total""".r
       val extractionPattern = """De (\d*) a (\d*) años""".r
       val extractionPatternMax = """De (\d*) y más años""".r
-      val ageRange = cells.last match {
+      cells.last match {
+        case total()                           => 0 until Int.MaxValue
         case extractionPattern(minAge, maxAge) => minAge.toInt until maxAge.toInt
         case extractionPatternMax(minAge)      => minAge.toInt until Int.MaxValue
       }
-      (ageRange, cells.dropRight(1).map(_.replaceAll("\\.", "").toInt))
+    }
+
+    private def extractTotals(epaContentLine: String, length: Int): List[Int] = {
+      val cells = epaContentLine.split(",").zipWithIndex.filter(_._2 % 2 == 0).map(_._1).toList
+      cells.padTo(length, "0").dropRight(1).map(_.replaceAll("\\.", "").toInt)
     }
   }
 
