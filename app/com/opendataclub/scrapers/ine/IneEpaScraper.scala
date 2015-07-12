@@ -116,7 +116,7 @@ class IneEpaScraper extends Scraper {
     implicit val rangeWrites = new Writes[Range] {
       def writes(range: Range) = Json.obj(
         "start" -> range.start,
-        "end" -> (range.end + 1))
+        "end" -> range.end)
     }
 
     implicit def tuple2[A: Writes, B: Writes]: Writes[(A, B)] = new Writes[(A, B)] {
@@ -193,7 +193,7 @@ class IneEpaScraper extends Scraper {
     }
 
     def columnsFromRanges(ranges: List[Range]): List[String] = {
-      ranges.map { range => s"from_${range.min}_to_from_${range.max}" }
+      ranges.map { range => s"from_${range.min}_to_${range.max + 1}" }
     }
 
     def valuesPerInterval(intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Float])])): List[(Interval, String, List[Float])] = {
