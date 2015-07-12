@@ -30,7 +30,7 @@ export SBT_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_s
 [Open Data Cloud] $ ~run
 ```
 
-This way you can debug from EclipseIDE with Debug --> Remote Java Application, Standard (Socket attach), port: 4000, and files will be automatically recompiled.
+This way you can debug from EclipseIDE with Debug --> Remote Java Application, Scala debugger (Socket attach), port: 4000, and files will be automatically recompiled.
 
 ### Troubleshooting
 
