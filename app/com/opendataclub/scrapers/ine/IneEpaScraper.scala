@@ -38,6 +38,7 @@ import com.opendataclub.models.DataTableRepository
 class IneEpaScraper extends Scraper {
 
   val downloadedFilePath = "tmp/epaQuarterSexAge.csv"
+  val groups = List("Ambos sexos", "Hombres", "Mujeres", "Ambos sexos (%)", "Hombres (%)", "Mujeres (%)" )
 
   def run(externalDataSource: ExternalDataSource, dbConfig: DatabaseConfig[JdbcProfile], dataImportRepository: DataImportRepository, dataTableRepository: DataTableRepository): Future[(DataImport, DataTable)] = {
     new URL(externalDataSource.downloadUrl) #> new File(downloadedFilePath) !!
@@ -52,7 +53,7 @@ class IneEpaScraper extends Scraper {
 
   class IneEpaScraperToScala {
 
-    def parseEpaQuarterSexAgeFile(downloadedFilePath: String): Future[(List[Interval], List[(Range, List[String])])] = {
+    def parseEpaQuarterSexAgeFile(downloadedFilePath: String): Future[(List[Interval], List[(Range, List[Int])])] = {
       Future {
         val epaContent = Source.fromFile(downloadedFilePath).getLines().toList.drop(3).dropRight(1)
 
@@ -71,7 +72,7 @@ class IneEpaScraper extends Scraper {
       }.toList
     }
 
-    private def extractTotals(epaContentLine: String): (Range, List[String]) = {
+    private def extractTotals(epaContentLine: String): (Range, List[Int]) = {
       val cells = epaContentLine.split(",").zipWithIndex.filter(_._2 % 2 == 0).map(_._1).toList
       val extractionPattern = """De (\d*) a (\d*) años""".r
       val extractionPatternMax = """De (\d*) y más años""".r
@@ -79,7 +80,7 @@ class IneEpaScraper extends Scraper {
         case extractionPattern(minAge, maxAge) => minAge.toInt until maxAge.toInt
         case extractionPatternMax(minAge)      => minAge.toInt until Int.MaxValue
       }
-      (ageRange, cells.dropRight(1).map(_.replaceAll("\\.", "")))
+      (ageRange, cells.dropRight(1).map(_.replaceAll("\\.", "").toInt))
     }
   }
 
@@ -100,7 +101,7 @@ class IneEpaScraper extends Scraper {
       def writes(o: (A, B)): JsValue = Json.arr(o._1, o._2)
     }
 
-    def intervalsAndValuesPerRangeToJson(intervalsAndValuesPerRange: (List[Interval], List[(Range, List[String])])): JsValue = {
+    def intervalsAndValuesPerRangeToJson(intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Int])])): JsValue = {
       Json.obj(
         "intervals" -> Json.toJson(intervalsAndValuesPerRange._1),
         "valuesPerRange" -> Json.toJson(intervalsAndValuesPerRange._2))
@@ -109,7 +110,7 @@ class IneEpaScraper extends Scraper {
 
   class DatabaseStorage {
 
-    def store(dbConfig: DatabaseConfig[JdbcProfile], dataImportId: DataImportId, intervalsAndValuesPerRange: (List[Interval], List[(Range, List[String])]), externalDataSource: ExternalDataSource): Future[(String, String)] = {
+    def store(dbConfig: DatabaseConfig[JdbcProfile], dataImportId: DataImportId, intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Int])]), externalDataSource: ExternalDataSource): Future[(String, String)] = {
 
       lazy val db = dbConfig.db
 
@@ -129,7 +130,6 @@ class IneEpaScraper extends Scraper {
       """.as[(Boolean)]
 
       db.run(sqlCheckTableExists).flatMap { exists =>
-        // WIP
         if (!exists(0)) {
           createDataTableContent(dbConfig, intervalsAndValuesPerRange, name).map { _ => (schema, name) }
         } else {
@@ -138,39 +138,52 @@ class IneEpaScraper extends Scraper {
       }
     }
 
-    private def createDataTableContent(dbConfig: DatabaseConfig[JdbcProfile], intervalsAndValuesPerRange: (List[Interval], List[(Range, List[String])]), name: String): Future[Boolean] = {
+    private def createDataTableContent(dbConfig: DatabaseConfig[JdbcProfile], intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Int])]), name: String): Future[(Int, List[Int])] = {
       lazy val db = dbConfig.db
-      
+
       val valuesPerRange = intervalsAndValuesPerRange._2
-      
+
       val columns = columnsFromRanges(valuesPerRange.map(_._1))
 
       val sqlCreateTable = sqlu"""
       create table #$name (
         "id" SERIAL NOT NULL PRIMARY KEY,
-        "interval" interval not null,
-        #${columns.map{ column => s"$column text" }.mkString(", ")}
+        "measure_group" text not null,
+        "interval_end" date not null,
+        #${columns.map { column => s"$column integer" }.mkString(", ")}
       )
       """
-      val result = db.run(sqlCreateTable)
 
-//      val inserts = valuesPerRange.map(
-//        rangeAndValues =>
-//          rangeAndValues._2.map {
-//            sqlu"""
-//              insert into $name (interval)
-//              values (${rangeAndValues._1})
-//              """
-//            values => values
-//          })
+      val values = valuesPerInterval(intervalsAndValuesPerRange)
 
-          //, ${columns.mkString(", ")
-          
-      result.map { _ => true }
+      val inserts = values.map {
+        intervalAndValues =>
+          sqlu"""
+              insert into #$name (interval_end, measure_group, #${columns.mkString(", ")})
+              values ('#${intervalAndValues._1.end}', '#${intervalAndValues._2}', #${intervalAndValues._3.mkString(", ")})
+              """
+      }
+
+      for {
+        resultCreate <- db.run(sqlCreateTable)
+        resultInserts <- Future.sequence(inserts.map(db.run(_)))
+      } yield (resultCreate, resultInserts)
     }
 
     def columnsFromRanges(ranges: List[Range]): List[String] = {
       ranges.map { range => s"from_${range.min}_to_from_${range.max}" }
+    }
+
+    def valuesPerInterval(intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Int])])): List[(Interval, String, List[Int])] = {
+      val intervals = intervalsAndValuesPerRange._1
+      val values = intervalsAndValuesPerRange._2.map(_._2)
+      val valuesTransposed = transpose(values).toVector
+      intervals.zipWithIndex.map { case (interval, i) => (interval, groups(i % groups.size), valuesTransposed(i)) }
+    }
+
+    def transpose[A](xs: List[List[A]]): List[List[A]] = xs.filter(_.nonEmpty) match {
+      case Nil               => Nil
+      case ys: List[List[A]] => ys.map { _.head } :: transpose(ys.map { _.tail })
     }
 
   }
