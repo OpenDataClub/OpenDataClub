@@ -38,7 +38,7 @@ import com.opendataclub.models.DataTableRepository
 class IneEpaScraper extends Scraper {
 
   val downloadedFilePath = "tmp/epaQuarterSexAge.csv"
-  val groups = List("Ambos sexos", "Ambos sexos (%)", "Mujeres", "Mujeres (%)", "Hombres", "Hombres (%)")
+  val groups = List("Ambos sexos", "Ambos sexos (%)", "Hombres", "Hombres (%)", "Mujeres", "Mujeres (%)")
 
   def run(externalDataSource: ExternalDataSource, dbConfig: DatabaseConfig[JdbcProfile], dataImportRepository: DataImportRepository, dataTableRepository: DataTableRepository): Future[(DataImport, DataTable)] = {
     new URL(externalDataSource.downloadUrl) #> new File(downloadedFilePath) !!
@@ -64,8 +64,6 @@ class IneEpaScraper extends Scraper {
         val ranges = epaContent.dropRight(1).map(extractRange(_))
         val totals = epaContent.drop(1).map(extractTotals(_, length).padTo(length, 0F)).toVector
         
-        totals.foreach { x => println(x.length) }
-
         (quarters, ranges.zipWithIndex.map { case (r, i) => (r, totals(i)) })
       }
     }
@@ -91,9 +89,6 @@ class IneEpaScraper extends Scraper {
     }
 
     private def extractTotals(epaContentLine: String, length: Int): List[Float] = {
-      //val cells = epaContentLine.split(",").zipWithIndex.filter(_._2 % 2 == 0).map(_._1).toList
-      //cells.padTo(length, "0").dropRight(1).map(_.replaceAll("\\.", "").toInt)
-      
       // removing percentage decimals
       epaContentLine
         .split(",")
