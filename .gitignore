@@ -9,3 +9,4 @@ dist
 bin
 .classpath
 .tmpBin
+.DS_Store
