@@ -57,13 +57,14 @@ class IneEpaScraper extends Scraper {
       Future {
         val epaContent = Source.fromFile(downloadedFilePath).getLines().toList.drop(3)
 
+        // INFO: this contains duplications 
         val quarters = extractQuartersFromHeader(epaContent.head)
 
         val length = quarters.length
 
         val ranges = epaContent.dropRight(1).map(extractRange(_))
         val totals = epaContent.drop(1).map(extractTotals(_, length).padTo(length, 0F)).toVector
-        
+
         (quarters, ranges.zipWithIndex.map { case (r, i) => (r, totals(i)) })
       }
     }
@@ -77,7 +78,7 @@ class IneEpaScraper extends Scraper {
     }
 
     private def extractRange(epaContentLine: String): (Range) = {
-    	val cells = epaContentLine.split(",").toList
+      val cells = epaContentLine.split(",").toList
       val total = """Total""".r
       val extractionPattern = """De (\d*) a (\d*) años""".r
       val extractionPatternMax = """De (\d*) y más años""".r
@@ -95,7 +96,7 @@ class IneEpaScraper extends Scraper {
         .padTo(length, "0")
         .grouped(2)
         .map { pairOrNot => (if (pairOrNot.length == 2) pairOrNot else Array(pairOrNot(0), 0)) }
-        .map { pair => s"${pair(0)}${pair(1)}"}
+        .map { pair => s"${pair(0)}${pair(1)}" }
         .toList
         .dropRight(1).map(_.replaceAll("\\.", "").toFloat / 10)
     }
@@ -194,13 +195,8 @@ class IneEpaScraper extends Scraper {
     def valuesPerInterval(intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Float])])): List[(Interval, String, List[Float])] = {
       val intervals = intervalsAndValuesPerRange._1
       val values = intervalsAndValuesPerRange._2.map(_._2)
-      val valuesTransposed = transpose(values).toVector
+      val valuesTransposed = values.transpose
       intervals.zipWithIndex.map { case (interval, i) => (interval, groups(i % groups.size), valuesTransposed(i)) }
-    }
-
-    def transpose[A](xs: List[List[A]]): List[List[A]] = xs.filter(_.nonEmpty) match {
-      case Nil               => Nil
-      case ys: List[List[A]] => ys.map { _.head } :: transpose(ys.map { _.tail })
     }
 
   }
