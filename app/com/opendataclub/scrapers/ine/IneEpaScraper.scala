@@ -38,7 +38,7 @@ import com.opendataclub.models.DataTableRepository
 class IneEpaScraper extends Scraper {
 
   val downloadedFilePath = "tmp/epaQuarterSexAge.csv"
-  val groups = List("Ambos sexos", "Ambos sexos (%)", "Hombres", "Hombres (%)", "Mujeres (%)", "Mujeres")
+  val groups = List("Ambos sexos", "Ambos sexos (%)", "Mujeres", "Mujeres (%)", "Hombres", "Hombres (%)")
 
   def run(externalDataSource: ExternalDataSource, dbConfig: DatabaseConfig[JdbcProfile], dataImportRepository: DataImportRepository, dataTableRepository: DataTableRepository): Future[(DataImport, DataTable)] = {
     new URL(externalDataSource.downloadUrl) #> new File(downloadedFilePath) !!
@@ -53,7 +53,7 @@ class IneEpaScraper extends Scraper {
 
   class IneEpaScraperToScala {
 
-    def parseEpaQuarterSexAgeFile(downloadedFilePath: String): Future[(List[Interval], List[(Range, List[Int])])] = {
+    def parseEpaQuarterSexAgeFile(downloadedFilePath: String): Future[(List[Interval], List[(Range, List[Float])])] = {
       Future {
         val epaContent = Source.fromFile(downloadedFilePath).getLines().toList.drop(3)
 
@@ -62,9 +62,8 @@ class IneEpaScraper extends Scraper {
         val length = quarters.length
 
         val ranges = epaContent.dropRight(1).map(extractRange(_))
-        val totals = epaContent.drop(1).map(extractTotals(_, length).padTo(length, 0)).toVector
+        val totals = epaContent.drop(1).map(extractTotals(_, length).padTo(length, 0F)).toVector
         
-        println(length)
         totals.foreach { x => println(x.length) }
 
         (quarters, ranges.zipWithIndex.map { case (r, i) => (r, totals(i)) })
@@ -80,8 +79,7 @@ class IneEpaScraper extends Scraper {
     }
 
     private def extractRange(epaContentLine: String): (Range) = {
-      //val cells = epaContentLine.split(",").zipWithIndex.filter(_._2 % 2 == 0).map(_._1).toList
-      val cells = epaContentLine.split(",").toList
+    	val cells = epaContentLine.split(",").toList
       val total = """Total""".r
       val extractionPattern = """De (\d*) a (\d*) años""".r
       val extractionPatternMax = """De (\d*) y más años""".r
@@ -92,9 +90,19 @@ class IneEpaScraper extends Scraper {
       }
     }
 
-    private def extractTotals(epaContentLine: String, length: Int): List[Int] = {
-      val cells = epaContentLine.split(",").zipWithIndex.filter(_._2 % 2 == 0).map(_._1).toList
-      cells.padTo(length, "0").dropRight(1).map(_.replaceAll("\\.", "").toInt)
+    private def extractTotals(epaContentLine: String, length: Int): List[Float] = {
+      //val cells = epaContentLine.split(",").zipWithIndex.filter(_._2 % 2 == 0).map(_._1).toList
+      //cells.padTo(length, "0").dropRight(1).map(_.replaceAll("\\.", "").toInt)
+      
+      // removing percentage decimals
+      epaContentLine
+        .split(",")
+        .padTo(length, "0")
+        .grouped(2)
+        .map { pairOrNot => (if (pairOrNot.length == 2) pairOrNot else Array(pairOrNot(0), 0)) }
+        .map { pair => s"${pair(0)}${pair(1)}"}
+        .toList
+        .dropRight(1).map(_.replaceAll("\\.", "").toFloat / 10)
     }
   }
 
@@ -108,14 +116,14 @@ class IneEpaScraper extends Scraper {
     implicit val rangeWrites = new Writes[Range] {
       def writes(range: Range) = Json.obj(
         "start" -> range.start,
-        "end" -> range.end)
+        "end" -> (range.end + 1))
     }
 
     implicit def tuple2[A: Writes, B: Writes]: Writes[(A, B)] = new Writes[(A, B)] {
       def writes(o: (A, B)): JsValue = Json.arr(o._1, o._2)
     }
 
-    def intervalsAndValuesPerRangeToJson(intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Int])])): JsValue = {
+    def intervalsAndValuesPerRangeToJson(intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Float])])): JsValue = {
       Json.obj(
         "intervals" -> Json.toJson(intervalsAndValuesPerRange._1),
         "valuesPerRange" -> Json.toJson(intervalsAndValuesPerRange._2))
@@ -124,7 +132,7 @@ class IneEpaScraper extends Scraper {
 
   class DatabaseStorage {
 
-    def store(dbConfig: DatabaseConfig[JdbcProfile], dataImportId: DataImportId, intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Int])]), externalDataSource: ExternalDataSource): Future[(String, String)] = {
+    def store(dbConfig: DatabaseConfig[JdbcProfile], dataImportId: DataImportId, intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Float])]), externalDataSource: ExternalDataSource): Future[(String, String)] = {
 
       lazy val db = dbConfig.db
 
@@ -152,7 +160,7 @@ class IneEpaScraper extends Scraper {
       }
     }
 
-    private def createDataTableContent(dbConfig: DatabaseConfig[JdbcProfile], intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Int])]), name: String): Future[(Int, List[Int])] = {
+    private def createDataTableContent(dbConfig: DatabaseConfig[JdbcProfile], intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Float])]), name: String): Future[(Int, List[Int])] = {
       lazy val db = dbConfig.db
 
       val valuesPerRange = intervalsAndValuesPerRange._2
@@ -164,7 +172,7 @@ class IneEpaScraper extends Scraper {
         "id" SERIAL NOT NULL PRIMARY KEY,
         "measure_group" text not null,
         "interval_end" date not null,
-        #${columns.map { column => s"$column integer" }.mkString(", ")}
+        #${columns.map { column => s"$column numeric(6, 1)" }.mkString(", ")}
       )
       """
 
@@ -188,7 +196,7 @@ class IneEpaScraper extends Scraper {
       ranges.map { range => s"from_${range.min}_to_from_${range.max}" }
     }
 
-    def valuesPerInterval(intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Int])])): List[(Interval, String, List[Int])] = {
+    def valuesPerInterval(intervalsAndValuesPerRange: (List[Interval], List[(Range, List[Float])])): List[(Interval, String, List[Float])] = {
       val intervals = intervalsAndValuesPerRange._1
       val values = intervalsAndValuesPerRange._2.map(_._2)
       val valuesTransposed = transpose(values).toVector
